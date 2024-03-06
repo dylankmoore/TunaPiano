@@ -5,7 +5,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace TunaPiano.Migrations
 {
-    public partial class InitialCreate : Migration
+    public partial class DBUpdate : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -46,7 +46,7 @@ namespace TunaPiano.Migrations
                     Title = table.Column<string>(type: "text", nullable: false),
                     ArtistId = table.Column<int>(type: "integer", nullable: false),
                     Album = table.Column<string>(type: "text", nullable: false),
-                    Length = table.Column<string>(type: "text", nullable: false)
+                    Length = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -112,11 +112,11 @@ namespace TunaPiano.Migrations
                 columns: new[] { "Id", "Album", "ArtistId", "Length", "Title" },
                 values: new object[,]
                 {
-                    { 1, "Simple Dreams", 1, "3:57", "Blue Bayou" },
-                    { 2, "The Loneliest Time", 2, "3:46", "Western Wind" },
-                    { 3, "Hounds of Love", 3, "4:41", "The Big Sky" },
-                    { 4, "9 to 5 and Odd Jobs", 4, "2:43", "9 to 5" },
-                    { 5, "The Miseducation of Lauryn Hill", 5, "5:27", "Ex-Factor" }
+                    { 1, "Simple Dreams", 1, 357, "Blue Bayou" },
+                    { 2, "The Loneliest Time", 2, 346, "Western Wind" },
+                    { 3, "Hounds of Love", 3, 441, "The Big Sky" },
+                    { 4, "9 to 5 and Odd Jobs", 4, 243, "9 to 5" },
+                    { 5, "The Miseducation of Lauryn Hill", 5, 527, "Ex-Factor" }
                 });
 
             migrationBuilder.CreateIndex(
