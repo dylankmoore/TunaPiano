@@ -1,6 +1,6 @@
 ﻿namespace TunaPiano.DTOS
 {
-    public class songCreationDTO
+    public class SongCreationDTO
     {
         public string Title { get; set; }
         public int ArtistId { get; set; }
