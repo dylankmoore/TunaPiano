@@ -35,7 +35,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 //CREATE A SONG
-app.MapPost("/api/songs", async (TunaPianoDbContext db, SongResponseDTO creationDTO) =>
+app.MapPost("/api/songs", async (TunaPianoDbContext db, SongDTO creationDTO) =>
 {
     var song = new Song
     {
@@ -66,7 +66,7 @@ app.MapDelete("/api/songs/{songId}", (TunaPianoDbContext db, int songId) =>
 });
 
 //UPDATE A SONG
-app.MapPut("/api/songs/{songId}", (TunaPianoDbContext db, SongResponseDTO updateDTO, int songId) =>
+app.MapPut("/api/songs/{songId}", (TunaPianoDbContext db, SongDTO updateDTO, int songId) =>
 {
     var updateSong = db.Songs.Find(songId);
     if (updateSong == null)
@@ -96,13 +96,13 @@ app.MapPut("/api/songs/{songId}", (TunaPianoDbContext db, SongResponseDTO update
 //GET ALL SONGS
 app.MapGet("/api/songs", (TunaPianoDbContext db) =>
 {
-    var songs = db.Songs.Select(song => new SongDTO
+    var songs = db.Songs.Select(song => new
     {
-        Id = song.Id,
-        Title = song.Title,
-        ArtistId = song.ArtistId, 
-        Album = song.Album,
-        Length = song.Length
+        song.Id,
+        song.Title,
+        song.ArtistId,
+        song.Album,
+        song.Length
     }).ToList();
 
     return Results.Ok(songs);
@@ -145,9 +145,9 @@ app.MapGet("/api/songs/{songId}", (TunaPianoDbContext db, int songId) =>
 });
 
 //CREATE AN ARTIST
-app.MapPost("/api/artists", (TunaPianoDbContext db, ArtistResponseDTO createArtistDTO) =>
+app.MapPost("/api/artists", (TunaPianoDbContext db, TunaPiano.DTOS.ArtistDTO createArtistDTO) =>
 {
-    var artist = new Artist
+    var artist = new TunaPiano.Models.Artist
     {
         Name = createArtistDTO.Name,
         Age = createArtistDTO.Age,
@@ -184,7 +184,7 @@ app.MapDelete("/api/artists/{artistId}", (TunaPianoDbContext db, int artistId) =
 });
 
 //UPDATE AN ARTIST
-app.MapPut("/api/artists/{artistId}", (TunaPianoDbContext db, ArtistResponseDTO updateDTO, int artistId) =>
+app.MapPut("/api/artists/{artistId}", (TunaPianoDbContext db, TunaPiano.DTOS.ArtistDTO updateDTO, int artistId) =>
 {
     var updateArtist = db.Artists.Find(artistId);
     if (updateArtist == null)
@@ -212,12 +212,12 @@ app.MapPut("/api/artists/{artistId}", (TunaPianoDbContext db, ArtistResponseDTO 
 //GET ALL ARTISTS
 app.MapGet("/api/artists", (TunaPianoDbContext db) =>
 {
-    var artists = db.Artists.Select(artist => new ArtistDTO
+    var artists = db.Artists.Select(artist => new
     {
-        Id = artist.Id,
-        Name = artist.Name,
-        Age = artist.Age,
-        Bio = artist.Bio
+        artist.Id,
+        artist.Name,
+        artist.Age,
+        artist.Bio
     }).ToList();
 
     return Results.Ok(artists);
@@ -255,23 +255,19 @@ app.MapGet("/artists/{artistId}", (TunaPianoDbContext db, int artistId) =>
 });
 
 //CREATE A GENRE
-app.MapPost("/api/genres", (TunaPianoDbContext db, GenreResponseDTO createGenreDTO) =>
+app.MapPost("/api/genres", async (TunaPianoDbContext db, GenreDTO genreDto) =>
 {
-    var genre = new Genre
+     var newGenre = new Genre
     {
-        Description = createGenreDTO.Description
+        Description = genreDto.Description
     };
 
-    db.Genres.Add(genre);
-    db.SaveChanges();
+    await db.Genres.AddAsync(newGenre);
+    await db.SaveChangesAsync();
 
-    var response = new GenreResponseDTO
-    {
-        Id = genre.Id,
-        Description = genre.Description
-    };
+    var response = new { Id = newGenre.Id, newGenre.Description };
 
-    return Results.Created($"/api/genres/{genre.Id}", response);
+    return Results.Created($"/api/genres/{newGenre.Id}", response);
 });
 
 //DELETE A GENRE
@@ -289,7 +285,7 @@ app.MapDelete("/api/genres/{genreId}", (TunaPianoDbContext db, int genreId) =>
 });
 
 //UPDATE A GENRE
-app.MapPut("/api/genres/{genreId}", (TunaPianoDbContext db, GenreResponseDTO updateDTO, int genreId) =>
+app.MapPut("/api/genres/{genreId}", (TunaPianoDbContext db, GenreDTO updateDTO, int genreId) =>
 {
     var updateGenre = db.Genres.Find(genreId);
     if (updateGenre == null)
@@ -311,13 +307,13 @@ app.MapPut("/api/genres/{genreId}", (TunaPianoDbContext db, GenreResponseDTO upd
 });
 
 //GET ALL GENRES
-app.MapGet("/api/genres", (TunaPianoDbContext db) =>
+app.MapGet("/api/genres", async (TunaPianoDbContext db) =>
 {
-    var genres = db.Genres.Select(genre => new GenreDTO
+    var genres = await db.Genres.Select(genre => new
     {
         Id = genre.Id,
         Description = genre.Description
-    }).ToList();
+    }).ToListAsync();
 
     return Results.Ok(genres);
 });
