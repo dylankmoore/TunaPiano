@@ -155,9 +155,8 @@ namespace TunaPiano.Migrations
                     b.Property<int>("ArtistId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Length")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Length")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -175,7 +174,7 @@ namespace TunaPiano.Migrations
                             Id = 1,
                             Album = "Simple Dreams",
                             ArtistId = 1,
-                            Length = "3:57",
+                            Length = 357,
                             Title = "Blue Bayou"
                         },
                         new
@@ -183,7 +182,7 @@ namespace TunaPiano.Migrations
                             Id = 2,
                             Album = "The Loneliest Time",
                             ArtistId = 2,
-                            Length = "3:46",
+                            Length = 346,
                             Title = "Western Wind"
                         },
                         new
@@ -191,7 +190,7 @@ namespace TunaPiano.Migrations
                             Id = 3,
                             Album = "Hounds of Love",
                             ArtistId = 3,
-                            Length = "4:41",
+                            Length = 441,
                             Title = "The Big Sky"
                         },
                         new
@@ -199,7 +198,7 @@ namespace TunaPiano.Migrations
                             Id = 4,
                             Album = "9 to 5 and Odd Jobs",
                             ArtistId = 4,
-                            Length = "2:43",
+                            Length = 243,
                             Title = "9 to 5"
                         },
                         new
@@ -207,7 +206,7 @@ namespace TunaPiano.Migrations
                             Id = 5,
                             Album = "The Miseducation of Lauryn Hill",
                             ArtistId = 5,
-                            Length = "5:27",
+                            Length = 527,
                             Title = "Ex-Factor"
                         });
                 });
