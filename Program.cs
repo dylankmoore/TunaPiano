@@ -35,7 +35,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 //CREATE A SONG
-app.MapPost("/api/songs", async (TunaPianoDbContext db, songCreationDTO creationDTO) =>
+app.MapPost("/api/songs", async (TunaPianoDbContext db, SongCreationDTO creationDTO) =>
 {
     var song = new Song
     {
@@ -53,9 +53,9 @@ app.MapPost("/api/songs", async (TunaPianoDbContext db, songCreationDTO creation
 });
 
 //DELETE A SONG
-app.MapDelete("/api/songs/{id}", (TunaPianoDbContext db, int id) =>
+app.MapDelete("/api/songs/{songId}", (TunaPianoDbContext db, int songId) =>
 {
-    var deleteSong = db.Songs.SingleOrDefault(s => s.Id == id);
+    var deleteSong = db.Songs.SingleOrDefault(s => s.Id == songId);
     if (deleteSong == null)
     {
         return Results.NotFound();
@@ -66,9 +66,9 @@ app.MapDelete("/api/songs/{id}", (TunaPianoDbContext db, int id) =>
 });
 
 //UPDATE A SONG
-app.MapPut("/api/songs/{id}", (TunaPianoDbContext db, UpdateSongDTO updateDTO, int id) =>
+app.MapPut("/api/songs/{songId}", (TunaPianoDbContext db, UpdateSongDTO updateDTO, int songId) =>
 {
-    var updateSong = db.Songs.Find(id);
+    var updateSong = db.Songs.Find(songId);
     if (updateSong == null)
     {
         return Results.NotFound();
@@ -93,7 +93,6 @@ app.MapPut("/api/songs/{id}", (TunaPianoDbContext db, UpdateSongDTO updateDTO, i
     return Results.Ok(response);
 });
 
-
 //GET ALL SONGS
 app.MapGet("/api/songs", (TunaPianoDbContext db) =>
 {
@@ -110,12 +109,12 @@ app.MapGet("/api/songs", (TunaPianoDbContext db) =>
 });
 
 //GET SONG DETAILS
-app.MapGet("/api/songs/{id}", (TunaPianoDbContext db, int id) =>
+app.MapGet("/api/songs/{songId}", (TunaPianoDbContext db, int songId) =>
 {
     var songDetails = db.Songs
         .Include(s => s.Artist)
         .Include(s => s.Genres)
-        .FirstOrDefault(s => s.Id == id);
+        .FirstOrDefault(s => s.Id == songId);
 
     if (songDetails == null)
     {
@@ -139,6 +138,116 @@ app.MapGet("/api/songs/{id}", (TunaPianoDbContext db, int id) =>
         {
             id = g.Id,
             description = g.Description
+        }).ToList()
+    };
+
+    return Results.Ok(response);
+});
+
+//CREATE AN ARTIST
+app.MapPost("/api/artists", (TunaPianoDbContext db, ArtistCreationDTO createArtistDTO) =>
+{
+    var artist = new Artist
+    {
+        Name = createArtistDTO.Name,
+        Age = createArtistDTO.Age,
+        Bio = createArtistDTO.Bio,
+        Songs = new List<Song>()
+    };
+
+    db.Artists.Add(artist);
+    db.SaveChanges();
+
+    var response = new
+    {
+        id = artist.Id,
+        name = artist.Name,
+        age = artist.Age,
+        bio = artist.Bio
+    };
+
+    return Results.Created($"/artists/{artist.Id}", response);
+});
+
+//DELETE AN ARTIST
+app.MapDelete("/api/artists/{artistId}", (TunaPianoDbContext db, int artistId) =>
+{
+    var deleteArtist = db.Artists.SingleOrDefault(a => a.Id == artistId);
+    if (deleteArtist == null)
+    {
+        return Results.NotFound();
+    }
+
+    db.Artists.Remove(deleteArtist);
+    db.SaveChanges();
+    return Results.NoContent();
+});
+
+//UPDATE AN ARTIST
+app.MapPut("/api/artists/{artistId}", (TunaPianoDbContext db, UpdateArtistDTO updateDTO, int artistId) =>
+{
+    var updateArtist = db.Artists.Find(artistId);
+    if (updateArtist == null)
+    {
+        return Results.NotFound();
+    }
+
+    updateArtist.Name = updateDTO.Name;
+    updateArtist.Age = updateDTO.Age;
+    updateArtist.Bio = updateDTO.Bio;
+
+    db.SaveChanges();
+
+    var response = new
+    {
+        id = updateArtist.Id,
+        name = updateArtist.Name,
+        age = updateArtist.Age,
+        bio = updateArtist.Bio
+    };
+
+    return Results.Ok(response);
+});
+
+//GET ALL ARTISTS
+app.MapGet("/api/artists", (TunaPianoDbContext db) =>
+{
+    var artists = db.Artists.Select(artist => new ArtistDTO
+    {
+        Id = artist.Id,
+        Name = artist.Name,
+        Age = artist.Age,
+        Bio = artist.Bio
+    }).ToList();
+
+    return Results.Ok(artists);
+});
+
+//GET ARTIST DETAILS
+app.MapGet("/artists/{artistId}", (TunaPianoDbContext db, int artistId) =>
+{
+    var artistDetails = db.Artists
+        .Include(a => a.Songs)
+        .FirstOrDefault(a => a.Id == artistId);
+
+    if (artistDetails == null)
+    {
+        return Results.NotFound();
+    }
+
+    var response = new
+    {
+        id = artistDetails.Id,
+        name = artistDetails.Name,
+        age = artistDetails.Age,
+        bio = artistDetails.Bio,
+        song_count = artistDetails.Songs.Count,
+        songs = artistDetails.Songs.Select(s => new
+        {
+            id = s.Id,
+            title = s.Title,
+            album = s.Album,
+            length = s.Length
         }).ToList()
     };
 
