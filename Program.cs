@@ -35,7 +35,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 //CREATE A SONG
-app.MapPost("/api/songs", async (TunaPianoDbContext db, SongCreationDTO creationDTO) =>
+app.MapPost("/api/songs", async (TunaPianoDbContext db, SongResponseDTO creationDTO) =>
 {
     var song = new Song
     {
@@ -66,7 +66,7 @@ app.MapDelete("/api/songs/{songId}", (TunaPianoDbContext db, int songId) =>
 });
 
 //UPDATE A SONG
-app.MapPut("/api/songs/{songId}", (TunaPianoDbContext db, UpdateSongDTO updateDTO, int songId) =>
+app.MapPut("/api/songs/{songId}", (TunaPianoDbContext db, SongResponseDTO updateDTO, int songId) =>
 {
     var updateSong = db.Songs.Find(songId);
     if (updateSong == null)
@@ -145,7 +145,7 @@ app.MapGet("/api/songs/{songId}", (TunaPianoDbContext db, int songId) =>
 });
 
 //CREATE AN ARTIST
-app.MapPost("/api/artists", (TunaPianoDbContext db, ArtistCreationDTO createArtistDTO) =>
+app.MapPost("/api/artists", (TunaPianoDbContext db, ArtistResponseDTO createArtistDTO) =>
 {
     var artist = new Artist
     {
@@ -184,7 +184,7 @@ app.MapDelete("/api/artists/{artistId}", (TunaPianoDbContext db, int artistId) =
 });
 
 //UPDATE AN ARTIST
-app.MapPut("/api/artists/{artistId}", (TunaPianoDbContext db, UpdateArtistDTO updateDTO, int artistId) =>
+app.MapPut("/api/artists/{artistId}", (TunaPianoDbContext db, ArtistResponseDTO updateDTO, int artistId) =>
 {
     var updateArtist = db.Artists.Find(artistId);
     if (updateArtist == null)
@@ -246,6 +246,103 @@ app.MapGet("/artists/{artistId}", (TunaPianoDbContext db, int artistId) =>
         {
             id = s.Id,
             title = s.Title,
+            album = s.Album,
+            length = s.Length
+        }).ToList()
+    };
+
+    return Results.Ok(response);
+});
+
+//CREATE A GENRE
+app.MapPost("/api/genres", (TunaPianoDbContext db, GenreResponseDTO createGenreDTO) =>
+{
+    var genre = new Genre
+    {
+        Description = createGenreDTO.Description
+    };
+
+    db.Genres.Add(genre);
+    db.SaveChanges();
+
+    var response = new GenreResponseDTO
+    {
+        Id = genre.Id,
+        Description = genre.Description
+    };
+
+    return Results.Created($"/api/genres/{genre.Id}", response);
+});
+
+//DELETE A GENRE
+app.MapDelete("/api/genres/{genreId}", (TunaPianoDbContext db, int genreId) =>
+{
+    var deleteGenre = db.Genres.Find(genreId);
+    if (deleteGenre == null)
+    {
+        return Results.NotFound();
+    }
+
+    db.Genres.Remove(deleteGenre);
+    db.SaveChanges();
+    return Results.NoContent();
+});
+
+//UPDATE A GENRE
+app.MapPut("/api/genres/{genreId}", (TunaPianoDbContext db, GenreResponseDTO updateDTO, int genreId) =>
+{
+    var updateGenre = db.Genres.Find(genreId);
+    if (updateGenre == null)
+    {
+        return Results.NotFound();
+    }
+
+    updateGenre.Description = updateDTO.Description;
+
+    db.SaveChanges();
+
+    var response = new
+    {
+        id = updateGenre.Id,
+        description = updateGenre.Description
+    };
+
+    return Results.Ok(response);
+});
+
+//GET ALL GENRES
+app.MapGet("/api/genres", (TunaPianoDbContext db) =>
+{
+    var genres = db.Genres.Select(genre => new GenreDTO
+    {
+        Id = genre.Id,
+        Description = genre.Description
+    }).ToList();
+
+    return Results.Ok(genres);
+});
+
+//GET GENRE DETAILS
+app.MapGet("/api/genres/{genreId}", (TunaPianoDbContext db, int genreId) =>
+{
+    var genreDetails = db.Genres
+        .Include(g => g.Songs)
+        .FirstOrDefault(g => g.Id == genreId);
+
+    if (genreDetails == null)
+    {
+        return Results.NotFound();
+    }
+
+    var response = new
+    {
+        id = genreDetails.Id,
+        description = genreDetails.Description,
+        songs = genreDetails.Songs.Select(s => new
+        {
+            id = s.Id,
+            title = s.Title,
+            artist_id = s.ArtistId,
             album = s.Album,
             length = s.Length
         }).ToList()
