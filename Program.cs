@@ -265,7 +265,7 @@ app.MapPost("/api/genres", async (TunaPianoDbContext db, GenreDTO genreDto) =>
     await db.Genres.AddAsync(newGenre);
     await db.SaveChangesAsync();
 
-    var response = new { Id = newGenre.Id, newGenre.Description };
+    var response = new { id = newGenre.Id, newGenre.Description };
 
     return Results.Created($"/api/genres/{newGenre.Id}", response);
 });
@@ -311,8 +311,8 @@ app.MapGet("/api/genres", async (TunaPianoDbContext db) =>
 {
     var genres = await db.Genres.Select(genre => new
     {
-        Id = genre.Id,
-        Description = genre.Description
+        id = genre.Id,
+        description = genre.Description
     }).ToListAsync();
 
     return Results.Ok(genres);
@@ -346,5 +346,141 @@ app.MapGet("/api/genres/{genreId}", (TunaPianoDbContext db, int genreId) =>
 
     return Results.Ok(response);
 });
+
+//GET POPULAR GENRES
+app.MapGet("/api/genres/popular", (TunaPianoDbContext db) =>
+{
+    var popularGenres = db.Genres
+        .Select(genre => new
+        {
+            id = genre.Id,
+            description = genre.Description,
+            SongCount = genre.Songs.Count
+        })
+        .OrderByDescending(g => g.SongCount)
+        .ToList();
+
+    return Results.Ok(new { genres = popularGenres });
+});
+
+//GET SIMILAR ARTISTS
+app.MapGet("/artists/{artistId}/related", (TunaPianoDbContext db, int artistId) =>
+{
+    var artist = db.Artists
+        .Include(a => a.Songs)
+        .ThenInclude(s => s.Genres)
+        .FirstOrDefault(a => a.Id == artistId);
+
+    if (artist == null)
+    {
+        return Results.NotFound("Artist not found!");
+    }
+
+    var artistGenres = artist.Songs
+        .SelectMany(s => s.Genres)
+        .ToList();
+
+    var relatedArtists = db.Artists
+        .Include(a => a.Songs)
+        .ThenInclude(s => s.Genres)
+        .Where(a => a.Id != artistId && a.Songs.Any(s => s.Genres.Any(g => artistGenres.Contains(g))))
+        .Select(a => new
+        {
+            id = a.Id,
+            name = a.Name
+        })
+        .ToList();
+
+    return Results.Ok(new { artists = relatedArtists });
+});
+
+//SEARCH SONGS BY GENRE
+app.MapGet("api/songs/genre/{genreId}", (TunaPianoDbContext db, int genreId) =>
+{
+    var songsByGenre = db.Songs
+        .Where(s => s.Genres.Any(g => g.Id == genreId))
+        .Select(s => new
+        {
+            id = s.Id,
+            title = s.Title,
+            artist_id = s.ArtistId,
+            album = s.Album,
+            length = s.Length
+        })
+        .ToList();
+
+    if (songsByGenre == null || songsByGenre.Count == 0)
+    {
+        return Results.NotFound("No songs found!");
+    }
+
+    return Results.Ok(new { songs = songsByGenre });
+});
+
+//SEARCH ARTISTS BY GENRE
+app.MapGet("/api/artists/genre/{genreId}", (TunaPianoDbContext db, int genreId) =>
+{
+    var artists = db.Artists
+        .Include(a => a.Songs)
+        .ThenInclude(s => s.Genres)
+        .Where(a => a.Songs.Any(s => s.Genres.Any(g => g.Id == genreId)))
+        .Select(a => new
+        {
+            id = a.Id,
+            name = a.Name,
+            age = a.Age,
+            bio = a.Bio
+        })
+        .ToList();
+
+    if (artists == null || artists.Count == 0)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(new { artists });
+});
+
+//ASSOCIATE SONGS WITH GENRES
+app.MapPut("/songs/{songId}/genres/{genreId}", (TunaPianoDbContext db, int songId, int genreId) =>
+{
+    var song = db.Songs.Include(s => s.Genres).FirstOrDefault(s => s.Id == songId);
+    if (song == null)
+    {
+        return Results.NotFound();
+    }
+
+    var genre = db.Genres.Find(genreId);
+    if (genre == null)
+    {
+        return Results.NotFound();
+    }
+
+    if (song.Genres == null)
+    {
+        song.Genres = new List<Genre>();
+    }
+
+    if (!song.Genres.Any(g => g.Id == genreId))
+    {
+        song.Genres.Add(genre);
+    }
+
+    db.SaveChanges();
+
+    string songName = song.Title;
+    string genreName = genre.Description;
+
+    var response = new
+    {
+        SongName = songName,
+        GenreName = genreName,
+        SongId = songId,
+        GenreId = genreId
+    };
+
+    return Results.Ok(response);
+});
+
 
 app.Run();
