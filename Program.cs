@@ -35,7 +35,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 //CREATE A SONG
-app.MapPost("/api/songs", async (TunaPianoDbContext db, SongDTO creationDTO) =>
+app.MapPost("/api/songs", (TunaPianoDbContext db, SongDTO creationDTO) =>
 {
     var song = new Song
     {
@@ -46,7 +46,7 @@ app.MapPost("/api/songs", async (TunaPianoDbContext db, SongDTO creationDTO) =>
     };
 
     db.Songs.Add(song);
-    await db.SaveChangesAsync();
+    db.SaveChanges(); // Synchronous call
 
     return Results.Created($"/api/songs/{song.Id}", 
     new { song.Id, song.Title, song.ArtistId, song.Album, song.Length });
@@ -145,9 +145,9 @@ app.MapGet("/api/songs/{songId}", (TunaPianoDbContext db, int songId) =>
 });
 
 //CREATE AN ARTIST
-app.MapPost("/api/artists", (TunaPianoDbContext db, TunaPiano.DTOS.ArtistDTO createArtistDTO) =>
+app.MapPost("/api/artists", (TunaPianoDbContext db, ArtistDTO createArtistDTO) =>
 {
-    var artist = new TunaPiano.Models.Artist
+    var artist = new Artist
     {
         Name = createArtistDTO.Name,
         Age = createArtistDTO.Age,
@@ -184,7 +184,7 @@ app.MapDelete("/api/artists/{artistId}", (TunaPianoDbContext db, int artistId) =
 });
 
 //UPDATE AN ARTIST
-app.MapPut("/api/artists/{artistId}", (TunaPianoDbContext db, TunaPiano.DTOS.ArtistDTO updateDTO, int artistId) =>
+app.MapPut("/api/artists/{artistId}", (TunaPianoDbContext db, ArtistDTO updateDTO, int artistId) =>
 {
     var updateArtist = db.Artists.Find(artistId);
     if (updateArtist == null)
