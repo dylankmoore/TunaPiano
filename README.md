@@ -30,7 +30,7 @@ Bonus features:
 - Seeing related artists with similar genres
 - Adding genres to songs
 
-- ## Data Design
+## Data Design
 ![240438602-a39bab27-bc1e-4a42-9ecc-ab96130bb509](https://github.com/dylankmoore/TunaPiano/assets/134669892/2e3c6466-7d26-4638-90e9-a4e9a3c285a4)
 
 ## Contributors
