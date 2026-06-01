@@ -34,4 +34,4 @@ Bonus features:
 ![240438602-a39bab27-bc1e-4a42-9ecc-ab96130bb509](https://github.com/dylankmoore/TunaPiano/assets/134669892/2e3c6466-7d26-4638-90e9-a4e9a3c285a4)
 
 ## Contributors
-- [Dylan Kristine Moore](https://github.com/dylankmoore)
+- [DKM](https://github.com/dylankmoore)
